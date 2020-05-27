@@ -1,0 +1,97 @@
+<html>
+  <head>
+    <title>文字水印</title>
+  </head>
+
+  <body>
+    <div>
+      <div>
+        <div>
+          <label
+            >图片路径：<input
+              id="wmImage"
+              type="text"
+              placeholder="例如：test.png"
+          /></label>
+        </div>
+        <div>
+          <label>文字：<input id="wmText" type="text" /></label>
+        </div>
+        <div>
+          <label>位置X(px)：<input id="wmX" type="number" /></label>
+        </div>
+        <div>
+          <label>位置Y(px)：<input id="wmY" type="number" /></label>
+        </div>
+        <div>
+          <label
+            >文字颜色：<input
+              id="wmColor"
+              type="text"
+              placeholder="例如：#ff0000"
+          /></label>
+        </div>
+        <div>
+          <label
+            >背景颜色：<input
+              id="wmBgColor"
+              type="text"
+              placeholder="例如：#009900"
+          /></label>
+        </div>
+        <div>
+          <label>背景宽度(px)：<input id="wmWidth" type="number" /></label>
+        </div>
+        <div>
+          <label>文字大小(px)：<input id="wmFontSize" type="number" /></label>
+        </div>
+        <div>
+          <label
+            >对齐方式：<select id="wmAlign" value="left"
+              ><option value="left">left</option
+              ><option value="center">center</option
+              ><option value="right">right</option></select
+            ></label
+          >
+        </div>
+        <button id="doWatermark">添加水印</button>
+      </div>
+      <div>
+        <image id="result" />
+      </div>
+    </div>
+  </body>
+
+  <script>
+    document.querySelector('#doWatermark').addEventListener('click', () => {
+      const image = document.querySelector('#wmImage').value
+      const url = `http://localhost:3000/image/watermark/text?image=${image}`
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', url, true)
+      xhr.onreadystatechange = function () {
+        // In local files, status is 0 upon success in Mozilla Firefox
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          var status = xhr.status
+          if (status === 0 || (status >= 200 && status < 400)) {
+            // The request has been completed successfully
+            let rsp = JSON.parse(xhr.responseText)
+            document.querySelector('#result').src = rsp.result
+          } else {
+            // Oh no! There has been an error with the request!
+          }
+        }
+      }
+      xhr.setRequestHeader('Content-type', 'application/json')
+      let params = {}
+      params.text = document.querySelector('#wmText').value
+      params.x = document.querySelector('#wmX').value
+      params.y = document.querySelector('#wmX').value
+      params.color = document.querySelector('#wmColor').value
+      params.bgColor = document.querySelector('#wmBgColor').value
+      params.width = document.querySelector('#wmWidth').value
+      params.fontSize = document.querySelector('#wmFontSize').value
+      params.align = document.querySelector('#wmAlign').value
+      xhr.send(JSON.stringify([params]))
+    })
+  </script>
+</html>
