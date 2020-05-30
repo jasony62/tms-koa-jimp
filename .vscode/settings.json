@@ -1,9 +1,10 @@
 {
   "editor.formatOnSave": true,
+  "editor.tabSize": 2,
   "eslint.enable": true,
   "vim.autoindent": false,
-  "editor.tabSize": 2,
   "editor.detectIndentation": false,
   "prettier.semi": false,
-  "prettier.singleQuote": true
+  "prettier.singleQuote": true,
+  "prettier.tabSize": 2
 }

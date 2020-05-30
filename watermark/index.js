@@ -1,11 +1,42 @@
+const { ResultData, ResultFault } = require('tms-koa')
 const { BaseCtrl } = require('tms-koa/lib/controller/fs/base')
 const { LocalFS } = require('tms-koa/lib/model/fs/local')
-const { ResultData, ResultFault } = require('tms-koa')
+const { UploadImage } = require('tms-koa/lib/model/fs/upload')
+const FsContext = require('tms-koa/lib/context/fs').Context
+
 const Jimp = require('jimp')
 
 const FONT_PATH = process.env.TMS_KOA_JIMP_FONT_PATH || Jimp.FONT_SANS_32_BLACK
 
 const FONT_SIZE = process.env.TMS_KOA_JIMP_FONT_SIZE || 32
+
+const SAVE_FS_DOMAIN = process.env.TMS_KOA_JIMP_SAVE_FS_DOMAIN
+
+class Saver {
+  constructor() {
+    this.available = false
+
+    if (!SAVE_FS_DOMAIN)
+      this.fault = '没有指定保存处理结果文件的域[TMS_KOA_JIMP_SAVE_FS_DOMAIN]'
+
+    const fsContext = FsContext.insSync()
+    const fsDomain = fsContext.getDomain(SAVE_FS_DOMAIN)
+    if (!fsDomain)
+      this.fault = `指定保存处理结果文件的域[${SAVE_FS_DOMAIN}]不可用`
+
+    this.domain = fsDomain
+    this.available = true
+  }
+  save(bucket, data) {
+    const saveFs = new LocalFS(this.domain, bucket)
+    const uploader = new UploadImage(saveFs)
+    const fullpath = uploader.storeBase64(data)
+    const relativePath = saveFs.relativePath(fullpath)
+    const publicPath = saveFs.publicPath(fullpath)
+
+    return { path: relativePath, publicPath }
+  }
+}
 
 class TextWatermark {
   constructor(image, font) {
@@ -69,16 +100,24 @@ class TextWatermark {
 }
 
 class Main extends BaseCtrl {
+  constructor(...args) {
+    super(...args)
+    this.saver = new Saver()
+  }
   /**
    * 添加文字水印
    */
   async text() {
-    const { image } = this.request.query
+    const { image, save } = this.request.query
 
     const localFS = new LocalFS(this.domain, this.bucket)
 
     if (!image || !localFS.existsSync(image))
       return new ResultFault('指定的文件不存在')
+
+    /* 保存结果 */
+    if (save === 'Y')
+      if (!this.saver.available) return new ResultFault(this.saver.fault)
 
     const watermarks = this.request.body
 
@@ -107,7 +146,13 @@ class Main extends BaseCtrl {
 
     const result = await jimpImage.getBase64Async(Jimp.AUTO)
 
-    return new ResultData(result)
+    /* 保存结果 */
+    if (save === 'Y') {
+      const path = this.saver.save(this.bucket, result)
+      return new ResultData(path)
+    } else {
+      return new ResultData(result)
+    }
   }
 }
 

@@ -6,5 +6,8 @@ module.exports = {
       prefix: '', // 接口调用url的前缀
       plugins_npm: [{ id: 'tms-koa-jimp', alias: 'image' }],
     },
+    fsdomian: {
+      prefix: 'files',
+    },
   },
 }
