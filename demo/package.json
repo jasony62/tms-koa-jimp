@@ -12,6 +12,6 @@
   "dependencies": {
     "log4js": "^6.3.0",
     "tms-koa": "^0.0.42",
-    "tms-koa-jimp": "^0.0.2"
+    "tms-koa-jimp": "^0.0.4"
   }
 }

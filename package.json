@@ -1,11 +1,12 @@
 {
   "name": "tms-koa-jimp",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "tms-koa插件，实现通过Web API操作jimp，处理图片。",
   "main": "index.js",
   "files": [
     "index.js",
-    "watermark"
+    "watermark",
+    "helper"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
